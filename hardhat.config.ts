@@ -1,7 +1,7 @@
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
-import "solidity-coverage";
+// import "solidity-coverage";
 
 import "./tasks/accounts";
 import "./tasks/clean";
@@ -22,7 +22,11 @@ const chainIds = {
   mainnet: 1,
   rinkeby: 4,
   ropsten: 3,
+  moonbaseDev: 1281,
 };
+
+// const MNEMONIC_SUBSTRATE_DEV = ['bottom', 'drive', 'obey', 'lake', 'curtain', 'smoke', 'basket', 'hold', 'race', 'lonely', 'fit', 'walk'];
+const MNEMONIC_SUBSTRATE_DEV = "bottom drive obey lake curtain smoke basket hold race lonely fit walk";
 
 // Ensure that we have all the environment variables we need.
 let mnemonic: string;
@@ -40,7 +44,8 @@ if (!process.env.INFURA_API_KEY) {
 }
 
 function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig {
-  const url: string = "https://" + network + ".infura.io/v3/" + infuraApiKey;
+  // const url: string = "https://" + network + ".infura.io/v3/" + infuraApiKey;
+  const url: string = "https://eth-" + network + ".alchemyapi.io/v2/FdOOWIUzborUPyWojShGpBG6HZlnnpiN";
   return {
     accounts: {
       count: 10,
@@ -50,6 +55,7 @@ function createTestnetConfig(network: keyof typeof chainIds): NetworkUserConfig 
     },
     chainId: chainIds[network],
     url,
+    gas: "auto",
   };
 }
 
@@ -60,7 +66,7 @@ const config: HardhatUserConfig = {
 
   gasReporter: {
     currency: "USD",
-    enabled: true,
+    enabled: process.env.REPORT_GAS ? true : false,
     excludeContracts: [],
     src: "./contracts",
   },
@@ -72,11 +78,35 @@ const config: HardhatUserConfig = {
       },
       chainId: chainIds.hardhat,
     },
+
+    moonbaseDev: {
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic: MNEMONIC_SUBSTRATE_DEV,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: 1281,
+      url: "http://127.0.0.1:9933",
+    },
+
+    moonbeamAlpha: {
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: 1287,
+      url: "https://rpc.testnet.moonbeam.network",
+    },
+
     goerli: createTestnetConfig("goerli"),
     kovan: createTestnetConfig("kovan"),
     rinkeby: createTestnetConfig("rinkeby"),
     ropsten: createTestnetConfig("ropsten"),
   },
+
   paths: {
     artifacts: "./artifacts",
     cache: "./cache",
@@ -115,7 +145,7 @@ const config: HardhatUserConfig = {
         },
       },
       {
-        version: "0.8.4",
+        version: "0.8.7",
         settings: {
           metadata: {
             // Not including the metadata hash
